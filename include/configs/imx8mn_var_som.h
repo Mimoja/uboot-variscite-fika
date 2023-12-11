@@ -122,7 +122,8 @@
 	"optargs=setenv bootargs ${bootargs} ${kernelargs};\0" \
 	"mmcargs=setenv bootargs ${mcore_clk} console=${console} " \
 		"root=/dev/mmcblk${mmcblk}p${mmcpart} rootwait rw ${cma_size} cma_name=linux,cma\0 " \
-	"loadbootscript=load mmc ${mmcdev}:${mmcpart} ${loadaddr} ${bootdir}/${bsp_script};\0" \
+	"bootscript_part=2\0" \
+	"loadbootscript=load mmc ${mmcdev}:${bootscript_part} ${loadaddr} ${bootdir}/${bsp_script};\0" \
 	"bootscript=echo Running bootscript from mmc ...; " \
 		"source\0" \
 	"loadimage=load mmc ${mmcdev}:${mmcpart} ${img_addr} ${bootdir}/${image};" \
@@ -156,20 +157,19 @@
 		"run ramsize_check; " \
 		"mmc dev ${mmcdev}; " \
 		"if mmc rescan; then " \
-			"if test ${use_m7} = yes && run loadm7bin; then " \
-				"run runm7bin; " \
-			"fi; " \
 			"if run loadbootscript; then " \
 				"run bootscript; " \
 			"else "\
+				"echo No bootscript found, booting from mmc...; " \
+			"fi; "\
+			"for part in 3 4 1; do " \
+				"echo trying to boot from partition ${part}...; " \
+				"setenv mmcpart 3; " \
 				"if run loadimage; then " \
 					"run mmcboot; " \
-				"else " \
-					"echo Failed to boot from current MMC ...; " \
 				"fi; " \
-			"fi; " \
-		"else " \
-			"booti ${loadaddr} - ${fdt_addr}; " \
+			"done; " \
+			"echo Failed to boot from any source!; " \
 		"fi;"
 
 /* Link Definitions */
