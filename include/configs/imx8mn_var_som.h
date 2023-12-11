@@ -152,48 +152,25 @@
 		"else " \
 			"echo wait for boot; " \
 		"fi;\0" \
-	"netargs=setenv bootargs ${mcore_clk} console=${console} " \
-		"root=/dev/nfs ${cma_size} cma_name=linux,cma " \
-		"ip=dhcp nfsroot=${serverip}:${nfsroot},v3,tcp\0" \
-	"netboot=echo Booting from net ...; " \
-		"if test ${ip_dyn} = yes; then " \
-			"setenv get_cmd dhcp; " \
-		"else " \
-			"setenv get_cmd tftp; " \
-		"fi; " \
-		"${get_cmd} ${img_addr} ${image}; unzip ${img_addr} ${loadaddr};" \
-		"run netargs; " \
-		"run optargs; " \
-		"if test ${boot_fdt} = yes || test ${boot_fdt} = try; then " \
-			"run findfdt; " \
-			"echo fdt_file=${fdt_file}; " \
-			"if ${get_cmd} ${fdt_addr_r} ${fdt_file}; then " \
-				"booti ${loadaddr} - ${fdt_addr_r}; " \
-			"else " \
-				"echo WARN: Cannot load the DT; " \
-			"fi; " \
-		"else " \
-			"booti; " \
-		"fi;\0" \
 	"bsp_bootcmd=echo Running BSP bootcmd ...; " \
-	"run ramsize_check; " \
-	"mmc dev ${mmcdev}; " \
-	"if mmc rescan; then " \
-		"if test ${use_m7} = yes && run loadm7bin; then " \
-			"run runm7bin; " \
-		"fi; " \
-		"if run loadbootscript; then " \
-			"run bootscript; " \
-		"else "\
-			"if run loadimage; then " \
-				"run mmcboot; " \
-			"else " \
-				"run netboot; " \
+		"run ramsize_check; " \
+		"mmc dev ${mmcdev}; " \
+		"if mmc rescan; then " \
+			"if test ${use_m7} = yes && run loadm7bin; then " \
+				"run runm7bin; " \
 			"fi; " \
-		"fi; " \
-	"else " \
-		"booti ${loadaddr} - ${fdt_addr}; " \
-	"fi;"
+			"if run loadbootscript; then " \
+				"run bootscript; " \
+			"else "\
+				"if run loadimage; then " \
+					"run mmcboot; " \
+				"else " \
+					"echo Failed to boot from current MMC ...; " \
+				"fi; " \
+			"fi; " \
+		"else " \
+			"booti ${loadaddr} - ${fdt_addr}; " \
+		"fi;"
 
 /* Link Definitions */
 
